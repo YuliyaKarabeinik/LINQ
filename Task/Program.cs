@@ -16,15 +16,18 @@ namespace SampleQueries
 {
 	static class Program
 	{
+		/// <summary>
+		/// The main entry point for the application.
+		/// </summary>
 		[STAThread]
 		static void Main(string[] args)
-        {
-            List<SampleHarness> harnesses = new List<SampleHarness>();
+		{
+			List<SampleHarness> harnesses = new List<SampleHarness>();
 
 
 			LinqSamples linqHarness = new LinqSamples();
 			harnesses.Add(linqHarness);
-			linqHarness.Linq8();
+
 			Application.EnableVisualStyles();
 
 			using (SampleForm form = new SampleForm("HomeWork - Mihail Romanov", harnesses))
@@ -32,26 +35,5 @@ namespace SampleQueries
 				form.ShowDialog();
 			}
 		}
-
-
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		//[STAThread]
-		//static void Main(string[] args)
-		//{
-		//	List<SampleHarness> harnesses = new List<SampleHarness>();
-
-
-		//	LinqSamples linqHarness = new LinqSamples();
-		//	harnesses.Add(linqHarness);
-
-		//	Application.EnableVisualStyles();
-
-		//	using (SampleForm form = new SampleForm("HomeWork - Mihail Romanov", harnesses))
-		//	{
-		//		form.ShowDialog();
-		//	}
-		//}
 	}
 }

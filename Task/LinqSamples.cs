@@ -90,7 +90,7 @@ namespace SampleQueries
         }
 
         [Description(@"2.Для каждого клиента составьте список поставщиков, находящихся в той же стране 
-и том же городе. Сделайте задания с использованием группировки и без.")]
+        и том же городе. Сделайте задания с использованием группировки и без.")]
         public void Linq2()
         {
             var customersSuppliers = from cust in dataSource.Customers
@@ -148,7 +148,7 @@ namespace SampleQueries
         }
 
         [Description(@"4.Выдайте список клиентов с указанием, начиная с какого месяца какого года они
-стали клиентами(принять за таковые месяц и год самого первого заказа)")]
+        стали клиентами(принять за таковые месяц и год самого первого заказа)")]
         public void Linq4()
         {
             var customers = dataSource.Customers.
@@ -166,7 +166,7 @@ namespace SampleQueries
         }
 
         [Description(@"5.Сделайте предыдущее задание, но выдайте список отсортированным по 
-году, месяцу, оборотам клиента(от максимального к минимальному) и имени клиента")]
+        году, месяцу, оборотам клиента(от максимального к минимальному) и имени клиента")]
         public void Linq5()
         {
             var customers = dataSource.Customers
@@ -187,9 +187,9 @@ namespace SampleQueries
             }
         }
 
-        [Description(@"6.Укажите всех клиентов, у которых указан нецифровой почтовый код 
-или не заполнен регион или в телефоне не указан код оператора
-(для простоты считаем, что это равнозначно «нет круглых скобочек в начале»).")]
+        [Description(@"6.Укажите всех клиентов, у которых указан нецифровой почтовый код или не заполнен регион
+        или в телефоне не указан код оператора(для простоты считаем, что это равнозначно 
+        «нет круглых скобочек в начале»).")]
         public void Linq6()
         {
             var customers = dataSource.Customers
@@ -204,7 +204,7 @@ namespace SampleQueries
         }
 
         [Description(@"7.Сгруппируйте все продукты по категориям, внутри – по наличию на складе,
-внутри последней группы отсортируйте по стоимости")]
+        внутри последней группы отсортируйте по стоимости")]
         public void Linq7()
         {
             var products = dataSource.Products
@@ -227,12 +227,11 @@ namespace SampleQueries
         }
 
         [Description(@"8.Cгруппируйте товары по группам «дешевые», «средняя цена», «дорогие». 
-Границы каждой группы задайте сами")]
+        Границы каждой группы задайте сами")]
         public void Linq8()
         {
             var averageBottomBoundary = 50.00m;
             var averageTopBoundary = 200.00m;
-
 
             var products = dataSource.Products
                 .GroupBy(p => p.UnitPrice <= averageBottomBoundary ? "Low" : 
@@ -241,19 +240,83 @@ namespace SampleQueries
                 .Select(p => new
                 {
                     Category = p.Key,
-                    Price = p.GroupBy(pp => pp.UnitPrice).Select(ppp=>ppp.Key)
+                    Value = p
                 });
 
             foreach (var product in products)
             {
                 ObjectDumper.Write(product.Category);
-                ObjectDumper.Write(product.Price);
+                ObjectDumper.Write(product.Value);
+            }
+        }
+
+        [Description(@"9.Рассчитайте среднюю прибыльность каждого города(среднюю сумму заказа по 
+        всем клиентам из данного города) и среднюю интенсивность(среднее количество заказов, приходящееся 
+        на клиента из каждого города)")]
+        public void Linq9()
+        {
+            var cities = dataSource.Customers.GroupBy(c => c.City)
+                .Select( c => new
+                {
+                    City = c.Key,
+                    Profitability = c.Select(cus => cus.Orders.Sum(o => o.Total)).Average(s => s),
+                    Intensity = c.Select(cus => cus.Orders.Length).Average(o => o)
+                });
+
+            foreach (var product in cities)
+            {
+                ObjectDumper.Write(product);
+            }
+        }
+
+        [Description(@"10.Сделайте среднегодовую статистику активности клиентов по месяцам(без учета года), 
+        статистику по годам, по годам и месяцам(т.е.когда один месяц в разные годы имеет своё значение).")]
+        public void Linq10()
+        {
+            var statistics = dataSource.Customers.Select(c => new
+            {
+                CustomerID = c.CustomerID,
+                YearsStatistics = c.Orders.GroupBy(o => o.OrderDate.Year).OrderBy(o => o.Key)
+                    .Select(g => new
+                    {
+                        Year = g.Key,
+                        Count = g.Count()
+                    }),
+                MonthsStatistics = c.Orders.GroupBy(o => o.OrderDate.Month).OrderBy(o => o.Key)
+                    .Select(g => new
+                    {
+                        Month = g.Key,
+                        Count = g.Count()
+                    }),
+                YearMonthStatistics = c.Orders.GroupBy(o => new { o.OrderDate.Year, o.OrderDate.Month })
+                    .OrderBy(o => o.Key.Year).ThenBy(o=> o.Key.Month)
+                    .Select(g => new
+                    {
+                        g.Key.Year,
+                        g.Key.Month,
+                        Count = g.Count()
+                    }),
+            });
+
+            foreach (var record in statistics)
+            {
+                ObjectDumper.Write($"CustomerId: {record.CustomerID}");
+                ObjectDumper.Write("\tMonths statistics:");
+                foreach (var item in record.MonthsStatistics)
+                {
+                    ObjectDumper.Write($"{item}");
+                }
+                ObjectDumper.Write("\tYears statistics:");
+                foreach (var item in record.YearsStatistics)
+                {
+                    ObjectDumper.Write($"{item}");
+                }
+                ObjectDumper.Write("\tYear and month statistics:");
+                foreach (var item in record.YearMonthStatistics)
+                {
+                    ObjectDumper.Write($"{item}");
+                }
             }
         }
     }
-    //9.	Рассчитайте среднюю прибыльность каждого города(среднюю сумму заказа по всем клиентам из данного города) и среднюю интенсивность(среднее количество заказов, приходящееся на клиента из каждого города)
-    //10.	Сделайте среднегодовую статистику активности клиентов по месяцам(без учета года), статистику по годам, по годам и месяцам(т.е.когда один месяц в разные годы имеет своё значение).
-
-
-
 }
